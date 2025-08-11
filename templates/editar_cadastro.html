@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="background-container"></div>
+<div class="main-container">
+    <div class="form-section">
+        <h2>Editar Cadastro</h2>
+        
+        <form id="editarCadastroForm" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="data">Data (DD/MM/AAAA)</label>
+                    <input type="text" id="data" name="data" placeholder="DD/MM/AAAA" 
+                           value="{{ cadastro['data'] }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cliente">CLIENTE</label>
+                    <select class="form-select" id="cliente" name="cliente_id" required>
+                        <option value="">Selecione um cliente...</option>
+                        {% for cliente in clientes %}
+                            <option value="{{ cliente['id'] }}" 
+                                    {% if cliente['id'] == cadastro['cliente_id'] %}selected{% endif %}>
+                                {{ cliente['nome'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mod_carsten">MOD CARSTEN</label>
+                    <select class="form-select" id="mod_carsten" name="mod_carsten" multiple required>
+                        <option value="">Selecione colaboradores...</option>
+                        {% for colaborador in colaboradores %}
+                            <option value="{{ colaborador['nome'] }}"
+                                    {% if colaborador['nome'] in colaboradores_selecionados %}selected{% endif %}>
+                                {{ colaborador['nome'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Pressione Ctrl (ou Cmd no Mac) para selecionar múltiplos colaboradores</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mdo_terceiro">MDO 3º</label>
+                    <input type="number" step="0.01" id="mdo_terceiro" name="mdo_terceiro" 
+                           value="{{ cadastro['mod_3'] }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="total_volumes">TOTAL VOLUMES</label>
+                    <input type="number" step="0.01" id="total_volumes" name="total_volumes" 
+                           value="{{ cadastro['total_volumes'] }}" required>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-save"></i> Atualizar Cadastro
+                </button>
+                
+                <a href="{{ url_for('historico_cadastros') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </form>
+        
+        <div id="resultado" class="mt-3"></div>
+        <div id="volPessoa" class="mt-2 fw-bold"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Formatação da data
+    $('#data').on('keyup', function() {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+        }
+        if (value.length > 5) {
+            value = value.substring(0, 5) + '/' + value.substring(5, 9);
+        }
+        $(this).val(value);
+    });
+
+    // Cálculo automático de VOL/PESSOA
+    $('select[name="mod_carsten"], input[name="mdo_terceiro"], input[name="total_volumes"]').on('change', function() {
+        // Para MOD CARSTEN, contar quantos colaboradores foram selecionados
+        const modSelected = $('#mod_carsten').val();
+        const mod = Array.isArray(modSelected) ? modSelected.length : (modSelected ? 1 : 0);
+        const mdo = parseFloat($('#mdo_terceiro').val()) || 0;
+        const volumes = parseFloat($('#total_volumes').val()) || 0;
+        
+        if (mod + mdo > 0) {
+            const volPessoa = (volumes / (mod + mdo)).toFixed(2);
+            $('#volPessoa').text(`VOL/PESSOA: ${volPessoa}`);
+        } else {
+            $('#volPessoa').text('');
+        }
+    });
+
+    // Calcular VOL/PESSOA inicial
+    setTimeout(function() {
+        $('select[name="mod_carsten"]').trigger('change');
+    }, 100);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 clientes-titulo">
+        <h2>Clientes Cadastrados</h2>
+        <a href="{{ url_for('novo_cliente') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Novo Cliente
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente['nome'] }}</td>
+                    <td>{{ cliente['codigo'] or '-' }}</td>
+                    <td>
+                        {% if cliente['ativo'] %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('editar_cliente', id=cliente['id']) }}" 
+                           class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{{ url_for('alternar_status_cliente', id=cliente['id']) }}" 
+                              method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-{% if cliente['ativo'] %}danger{% else %}success{% endif %}">
+                                <i class="bi bi-{% if cliente['ativo'] %}x-circle{% else %}check-circle{% endif %}"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

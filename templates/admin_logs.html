@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4 usuarios-criar-titulo">Logs do Sistema</h2>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-2">
+                    <label for="usuario" class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="usuario" name="usuario" 
+                           value="{{ filtros.usuario or '' }}" placeholder="Nome do usuário">
+                </div>
+                <div class="col-md-2">
+                    <label for="acao" class="form-label">Ação</label>
+                    <input type="text" class="form-control" id="acao" name="acao" 
+                           value="{{ filtros.acao or '' }}" placeholder="Tipo de ação">
+                </div>
+                <div class="col-md-2">
+                    <label for="modulo" class="form-label">Módulo</label>
+                    <input type="text" class="form-control" id="modulo" name="modulo" 
+                           value="{{ filtros.modulo or '' }}" placeholder="Módulo do sistema">
+                </div>
+                <div class="col-md-2">
+                    <label for="data_inicio" class="form-label">Data Início</label>
+                    <input type="date" class="form-control" id="data_inicio" name="data_inicio" 
+                           value="{{ filtros.data_inicio or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="data_fim" class="form-label">Data Fim</label>
+                    <input type="date" class="form-control" id="data_fim" name="data_fim" 
+                           value="{{ filtros.data_fim or '' }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{{ url_for('visualizar_logs') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ paginacao.total }}</h5>
+                    <p class="card-text">Total de Logs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ paginacao.total_paginas }}</h5>
+                    <p class="card-text">Páginas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ paginacao.por_pagina }}</h5>
+                    <p class="card-text">Por Página</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <a href="{{ url_for('exportar_logs') }}" class="btn btn-success">
+                        <i class="bi bi-download"></i> Exportar CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabela de Logs -->
+    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+        <table class="table table-striped table-hover" style="min-width: 1200px;">
+            <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th style="min-width: 150px;">Data/Hora</th>
+                    <th style="min-width: 120px;">Usuário</th>
+                    <th style="min-width: 120px;">Ação</th>
+                    <th style="min-width: 100px;">Módulo</th>
+                    <th style="min-width: 200px;">Detalhes</th>
+                    <th style="min-width: 120px;">IP</th>
+                    <th style="min-width: 200px;">User Agent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log['timestamp'] }}</td>
+                    <td><span class="badge bg-primary">{{ log['usuario_nome'] or 'Sistema' }}</span></td>
+                    <td>
+                        {% if log['acao'] == 'LOGIN' %}<span class="badge bg-success">{{ log['acao'] }}</span>
+                        {% elif log['acao'] == 'LOGOUT' %}<span class="badge bg-info">{{ log['acao'] }}</span>
+                        {% elif log['acao'] == 'CADASTRO_CRIADO' %}<span class="badge bg-success">{{ log['acao'] }}</span>
+                        {% elif log['acao'] == 'CADASTRO_EDITADO' %}<span class="badge bg-warning">{{ log['acao'] }}</span>
+                        {% elif log['acao'] == 'CADASTRO_EXCLUIDO' %}<span class="badge bg-danger">{{ log['acao'] }}</span>
+                        {% elif log['acao'] == 'LOGIN_FALHADO' %}<span class="badge bg-danger">{{ log['acao'] }}</span>
+                        {% else %}<span class="badge bg-secondary">{{ log['acao'] }}</span>{% endif %}
+                    </td>
+                    <td><span class="badge bg-dark">{{ log['modulo'] }}</span></td>
+                    <td><small class="text-muted">{{ log['detalhes'][:100] }}{% if log['detalhes']|length > 100 %}...{% endif %}</small></td>
+                    <td><code>{{ log['ip_address'] }}</code></td>
+                    <td><small class="text-muted">{{ log['user_agent'][:50] }}{% if log['user_agent']|length > 50 %}...{% endif %}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Paginação -->
+    {% if paginacao.total_paginas > 1 %}
+    <nav aria-label="Paginação dos logs">
+        <ul class="pagination justify-content-center">
+            {% if paginacao.pagina > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('visualizar_logs', pagina=paginacao.pagina-1, **filtros) }}">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for p in range(1, paginacao.total_paginas + 1) %}
+                {% if p == paginacao.pagina %}
+                <li class="page-item active">
+                    <span class="page-link">{{ p }}</span>
+                </li>
+                {% elif p <= paginacao.pagina + 2 and p >= paginacao.pagina - 2 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('visualizar_logs', pagina=p, **filtros) }}">{{ p }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if paginacao.pagina < paginacao.total_paginas %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('visualizar_logs', pagina=paginacao.pagina+1, **filtros) }}">
+                    Próxima <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    <!-- Botão Voltar -->
+    <div class="mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Formatação automática das datas
+    $('input[type="date"]').on('change', function() {
+        // Validar se data início é menor que data fim
+        const dataInicio = $('#data_inicio').val();
+        const dataFim = $('#data_fim').val();
+        
+        if (dataInicio && dataFim && dataInicio > dataFim) {
+            alert('A data de início deve ser menor que a data de fim!');
+            $(this).val('');
+        }
+    });
+});
+</script>
+{% endblock %}

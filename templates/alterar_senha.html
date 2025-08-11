@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 usuarios-criar-titulo">Alterar Senha</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="senha_atual" class="form-label">Senha Atual</label>
+                    <input type="password" class="form-control" id="senha_atual" name="senha_atual" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="nova_senha" class="form-label">Nova Senha</label>
+                    <input type="password" class="form-control" id="nova_senha" name="nova_senha" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="confirmacao" class="form-label">Confirme a Nova Senha</label>
+                    <input type="password" class="form-control" id="confirmacao" name="confirmacao" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Alterar Senha</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

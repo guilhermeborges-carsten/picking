@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 clientes-titulo">Editar Cliente</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome do Cliente*</label>
+                    <input type="text" class="form-control" id="nome" name="nome" 
+                           value="{{ cliente['nome'] }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="codigo" class="form-label">Código (opcional)</label>
+                    <input type="text" class="form-control" id="codigo" name="codigo"
+                           value="{{ cliente['codigo'] or '' }}">
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="ativo" name="ativo"
+                           {% if cliente['ativo'] %}checked{% endif %}>
+                    <label class="form-check-label" for="ativo">Cliente ativo</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{{ url_for('listar_clientes') }}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

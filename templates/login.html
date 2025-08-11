@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set hide_nav = True %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-box text-center">
+        <!-- Cabeçalho -->
+        <div class="login-header mb-4">
+            <h1 class="login-title">Sistema de Cadastro Picking</h1>
+        </div>
+
+        <!-- Formulário -->
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Usuário" required>
+                <label for="username">Usuário</label>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Senha" required>
+                <label for="password">Senha</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-login w-100 py-2">
+                ENTRAR
+            </button>
+        </form>
+
+        <!-- Rodapé -->
+        <div class="login-footer mt-4">
+            <div class="copyright">© Sistema desenvolvido Time BI</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

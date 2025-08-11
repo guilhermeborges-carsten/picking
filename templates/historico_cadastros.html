@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4 historico-cadastros-titulo">Histórico de Cadastros</h2>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    {% for titulo in titulos %}
+                        <th>{{ titulo }}</th>
+                    {% endfor %}
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cadastro in cadastros %}
+                <tr>
+                    <td>{{ cadastro['data'] }}</td>
+                    <td>{{ cadastro['cliente'] }}</td>
+                    <td>
+                        {% if cadastro['mod_carsten'] is iterable and cadastro['mod_carsten'] is not string %}
+                            {{ cadastro['mod_carsten']|join(', ') }}
+                        {% else %}
+                            {{ cadastro['mod_carsten'] }}
+                        {% endif %}
+                    </td>
+                    <td>{{ cadastro['mod_3'] }}</td>
+                    <td>{{ cadastro['total_volumes'] }}</td>
+                    <td>{{ cadastro['vol_pessoas'] }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_cadastro', id=cadastro['id']) }}" class="btn btn-sm btn-warning me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button class="btn btn-sm btn-danger excluir-cadastro" data-id="{{ cadastro['id'] }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('.excluir-cadastro').click(function() {
+        if(confirm('Tem certeza que deseja excluir este cadastro?')) {
+            const id = $(this).data('id');
+            window.location.href = "{{ url_for('excluir_cadastro') }}?id=" + id;
+        }
+    });
+});
+</script>
+{% endblock %}
