@@ -11,6 +11,10 @@ from flask import session, redirect, url_for
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
 
+# Configurações para produção (Render)
+app.config['STATIC_FOLDER'] = 'static'
+app.config['STATIC_URL_PATH'] = '/static'
+
 # Configurações
 DATABASE = 'cadastro_clientes.db'
 CLIENTES = ["YPÊ", "LIDER", "SELMI", "BRITVIC", "MARS", "FUGINI", "BAUDUCCO", 
@@ -1073,4 +1077,7 @@ def exportar_logs():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    # Configurações para produção (Render)
+    port = int(os.environ.get('PORT', 5000))
+    host = os.environ.get('HOST', '0.0.0.0')
+    app.run(host=host, port=port, debug=False)

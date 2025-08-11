@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: picking-system
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.16
+      - key: PORT
+        value: 5000
+    staticPublishPath: ./static
+    staticRoutes:
+      - /static
