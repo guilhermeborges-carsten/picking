@@ -52,8 +52,6 @@ body {
     color: white;
 }
 
-
-
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -131,8 +129,7 @@ select[multiple] option:hover {
     color: white;
 }
 
-
-
+/* Estilos responsivos para celular */
 @media (max-width: 768px) {
     .main-container {
         flex-direction: column;
@@ -141,16 +138,378 @@ select[multiple] option:hover {
     .form-grid {
         grid-template-columns: 1fr;
     }
+    
+    /* Melhorar navegação mobile */
+    .navbar-nav {
+        text-align: center;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-nav .nav-link:last-child {
+        border-bottom: none;
+    }
+    
+    /* Ajustar botões para mobile */
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 12px 15px;
+        font-size: 16px; /* Melhor para touch */
+    }
+    
+    .button-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Ajustar formulários para mobile */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Evita zoom no iOS */
+        padding: 12px;
+    }
+    
+    /* Ajustar cards para mobile */
+    .card {
+        margin: 10px 0;
+        border-radius: 8px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    /* Ajustar tabelas para mobile */
+    .table-responsive {
+        font-size: 14px;
+    }
+    
+    .table td,
+    .table th {
+        padding: 8px 4px;
+    }
+    
+    /* Ajustar container principal */
+    .container {
+        padding: 10px;
+    }
+    
+    /* Ajustar títulos para mobile */
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+    
+    /* Melhorar espaçamento em mobile */
+    .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .mt-4 {
+        margin-top: 1rem !important;
+    }
+    
+    /* Ajustar navegação mobile */
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    /* Melhorar formulário de editar usuário */
+    .form-check {
+        margin: 15px 0;
+    }
+    
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+    
+    .form-check-label {
+        font-size: 16px;
+        padding: 5px 0;
+    }
 }
 
+/* Estilos para telas muito pequenas (smartphones pequenos) */
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .card-body {
+        padding: 10px;
+    }
+    
+    .btn {
+        padding: 15px 20px;
+        font-size: 18px;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    /* Ajustar formulários para telas muito pequenas */
+    .form-group label {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        font-size: 16px;
+        padding: 15px;
+    }
+    
+    /* Melhorar espaçamento entre elementos */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* Ajustar títulos para telas muito pequenas */
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 1.3rem;
+        line-height: 1.3;
+    }
+}
 
+/* Estilos para orientação landscape em mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .navbar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .navbar-nav .nav-link {
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 12px;
+    }
+    
+    .navbar-nav .nav-link:last-child {
+        border-right: none;
+    }
+}
+
+/* Melhorar acessibilidade em mobile */
+@media (max-width: 768px) {
+    /* Aumentar área de toque para botões */
+    .btn,
+    .nav-link,
+    .form-check-input {
+        min-height: 44px; /* Apple recomenda mínimo de 44px */
+    }
+    
+    /* Melhorar contraste em mobile */
+    .form-group label {
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    /* Ajustar espaçamento para melhor usabilidade */
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    /* Melhorar formulários em mobile */
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    /* Melhorar navegação mobile */
+    .navbar-toggler {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 12px;
+    }
+    
+    .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+    }
+    
+    .navbar-toggler-icon {
+        width: 1.2em;
+        height: 1.2em;
+    }
+    
+    /* Melhorar menu mobile */
+    .navbar-collapse {
+        background-color: rgba(33, 37, 41, 0.95);
+        border-radius: 8px;
+        margin-top: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .navbar-nav .nav-link {
+        border-radius: 6px;
+        margin: 2px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+    
+    /* Melhorar botão sair em mobile */
+    .btn-outline-light {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 6px;
+    }
+    
+    /* Melhorar ícones em mobile */
+    .bi {
+        font-size: 1.1em;
+    }
+    
+    /* Ajustar espaçamento do navbar */
+    .navbar {
+        padding: 10px 15px;
+    }
+    
+    .navbar-brand {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+}
+
+/* Estilos específicos para telas muito pequenas */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 8px 10px;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .navbar-toggler {
+        padding: 6px 10px;
+    }
+    
+    .navbar-collapse {
+        margin-top: 8px;
+        padding: 10px;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .bi {
+        font-size: 1em;
+    }
+}
+
+/* Melhorar transições e animações */
+@media (max-width: 768px) {
+    .navbar-collapse {
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .nav-link {
+        transition: all 0.2s ease;
+    }
+    
+    .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Melhorar feedback visual em mobile */
+    .form-control:focus {
+        transform: scale(1.02);
+        transition: all 0.2s ease;
+    }
+    
+    /* Melhorar cards em mobile */
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Estilos para melhorar a experiência em dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .nav-link:hover {
+        background-color: transparent;
+        transform: none;
+    }
+    
+    .card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* Melhorar feedback visual para touch */
+    .btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+    
+    .nav-link:active {
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: background-color 0.1s ease;
+    }
+}
+
+/* Melhorar acessibilidade para leitores de tela */
+@media (max-width: 768px) {
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+        transform: rotate(90deg);
+        transition: transform 0.3s ease;
+    }
+    
+    .navbar-toggler[aria-expanded="false"] .navbar-toggler-icon {
+        transform: rotate(0deg);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Melhorar contraste para acessibilidade */
+    .form-group label {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    
+    .card-header {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .card-header h5 {
+        color: #ffffff;
+        font-weight: 600;
+        margin: 0;
+    }
+}
 
 .historico-cadastros-titulo {
     color: #ffffff; /* Azul */
     border-bottom: 2px solid #f5f5f5;
     padding-bottom: 8px;
 }
-
 
 /* Estilos específicos para login */
 .login-container {

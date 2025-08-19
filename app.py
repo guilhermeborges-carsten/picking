@@ -330,49 +330,64 @@ def salvar():
         try:
             data_formatada = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
             
-            # Para cada colaborador selecionado, verificar se já existe um registro para ele no dia
-            # e inserir apenas se não existir
-            colaboradores_inseridos = []
-            for colaborador in colaboradores_selecionados:
-                # Verificar se já existe um registro para este colaborador no dia
-                existing = conn.execute('''
-                    SELECT id FROM tb_pck_arm 
-                    WHERE data = ? AND mod_carsten = ? AND cliente_id = ?
-                ''', (data_formatada, colaborador, cliente_id_int)).fetchone()
-                
-                if not existing:
-                    # Inserir novo registro apenas se não existir
+            # NOVA LÓGICA: Verificar se já existe um registro para este dia, cliente e MDO 3º
+            existing_record = conn.execute('''
+                SELECT id, mod_carsten, total_volumes, vol_pessoas 
+                FROM tb_pck_arm 
+                WHERE data = ? AND cliente_id = ? AND mod_3 = ?
+                LIMIT 1
+            ''', (data_formatada, cliente_id_int, mdo_terceiro)).fetchone()
+            
+            if existing_record:
+                # Já existe um registro para este dia/cliente/MDO 3º
+                # Atualizar apenas se os dados forem diferentes
+                if (existing_record['total_volumes'] != total_volumes or 
+                    existing_record['vol_pessoas'] != str(vol_pessoa)):
+                    
+                    # Atualizar o registro existente
                     conn.execute('''
-                        INSERT INTO tb_pck_arm 
-                        (data, cliente_id, mod_carsten, mod_3, total_volumes, vol_pessoas, usuario_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (
-                        data_formatada,
-                        cliente_id_int,
-                        colaborador,
-                        mdo_terceiro,
-                        total_volumes,
-                        str(vol_pessoa),
-                        session['user_id']
-                    ))
-                    colaboradores_inseridos.append(colaborador)
-            
-            conn.commit()
-            
-            # Mensagem informando quantos colaboradores foram inseridos
-            if colaboradores_inseridos:
-                mensagem = f'Dados salvos com sucesso! {len(colaboradores_inseridos)} colaborador(es) inserido(s): {", ".join(colaboradores_inseridos)}'
+                        UPDATE tb_pck_arm 
+                        SET total_volumes = ?, vol_pessoas = ?, usuario_id = ?
+                        WHERE id = ?
+                    ''', (total_volumes, str(vol_pessoa), session['user_id'], existing_record['id']))
+                    
+                    # Registrar log de atualização
+                    registrar_log('CADASTRO_ATUALIZADO', 'CADASTROS', 
+                                f'Cadastro atualizado - Cliente: {cliente_id_int}, Data: {data}, '
+                                f'Volumes: {total_volumes} (anterior: {existing_record["total_volumes"]})')
+                    
+                    mensagem = f'Cadastro atualizado com sucesso! Volumes alterados de {existing_record["total_volumes"]} para {total_volumes}'
+                else:
+                    mensagem = 'Dados já cadastrados para este dia! Nenhuma alteração necessária.'
+                    
+                    # Registrar log de tentativa de cadastro duplicado
+                    registrar_log('CADASTRO_DUPLICADO', 'CADASTROS', 
+                                f'Tentativa de cadastro duplicado - Cliente: {cliente_id_int}, Data: {data}')
+            else:
+                # Não existe registro para este dia/cliente/MDO 3º, criar um novo
+                # Inserir apenas um registro representando o dia inteiro
+                conn.execute('''
+                    INSERT INTO tb_pck_arm 
+                    (data, cliente_id, mod_carsten, mod_3, total_volumes, vol_pessoas, usuario_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    data_formatada,
+                    cliente_id_int,
+                    ', '.join(colaboradores_selecionados),  # Salvar todos os colaboradores em um campo
+                    mdo_terceiro,
+                    total_volumes,
+                    str(vol_pessoa),
+                    session['user_id']
+                ))
                 
                 # Registrar log de cadastro bem-sucedido
                 registrar_log('CADASTRO_CRIADO', 'CADASTROS', 
                             f'Novo cadastro criado - Cliente: {cliente_id_int}, Data: {data}, '
-                            f'Colaboradores: {", ".join(colaboradores_inseridos)}, Volumes: {total_volumes}')
-            else:
-                mensagem = 'Todos os colaboradores já estavam cadastrados para este dia!'
+                            f'Colaboradores: {", ".join(colaboradores_selecionados)}, Volumes: {total_volumes}')
                 
-                # Registrar log de tentativa de cadastro duplicado
-                registrar_log('CADASTRO_DUPLICADO', 'CADASTROS', 
-                            f'Tentativa de cadastro duplicado - Cliente: {cliente_id_int}, Data: {data}')
+                mensagem = f'Dados salvos com sucesso! {len(colaboradores_selecionados)} colaborador(es) cadastrado(s) para o dia: {", ".join(colaboradores_selecionados)}'
+            
+            conn.commit()
             
             return jsonify({
                 'success': True,
@@ -398,40 +413,14 @@ def historico_cadastros():
 
     conn = get_db_connection()
     
-    
-    # Buscar todos os registros agrupados por data, cliente e MDO 3º
-    cadastros_raw = conn.execute('''
+    # Buscar todos os registros (agora cada registro representa um dia completo)
+    cadastros = conn.execute('''
         SELECT c.id, date(c.data) as data, cl.nome as cliente, c.mod_carsten, c.mod_3, 
                c.total_volumes, c.vol_pessoas, c.usuario_id
         FROM tb_pck_arm c
         JOIN clientes cl ON c.cliente_id = cl.id
         ORDER BY c.data DESC, cl.nome
     ''').fetchall()
-    
-    # Agrupar registros por data, cliente e MDO 3º
-    cadastros_agrupados = {}
-    for registro in cadastros_raw:
-        chave = (registro['data'], registro['cliente'], registro['mod_3'], registro['total_volumes'])
-        
-        if chave not in cadastros_agrupados:
-            cadastros_agrupados[chave] = {
-                'id': registro['id'],
-                'data': registro['data'],
-                'cliente': registro['cliente'],
-                'mod_carsten': [registro['mod_carsten']],
-                'mod_3': registro['mod_3'],
-                'total_volumes': registro['total_volumes'],
-                'vol_pessoas': registro['vol_pessoas'],
-                'usuario_id': registro['usuario_id']
-            }
-        else:
-            # Adicionar colaborador à lista se não estiver duplicado
-            if registro['mod_carsten'] not in cadastros_agrupados[chave]['mod_carsten']:
-                cadastros_agrupados[chave]['mod_carsten'].append(registro['mod_carsten'])
-    
-    # Converter para lista e ordenar
-    cadastros = list(cadastros_agrupados.values())
-    cadastros.sort(key=lambda x: (x['data'], x['cliente']), reverse=True)
     
     conn.close()
     
@@ -511,27 +500,22 @@ def editar_cadastro(id):
             vol_pessoa = round(total_volumes_float / (mod_carsten_count + mdo_terceiro_float), 2)
             data_formatada = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
             
-            # Primeiro, excluir todos os registros antigos com a mesma data, cliente_id e mod_3
+            # Atualizar o registro existente
             conn.execute('''
-                DELETE FROM tb_pck_arm 
-                WHERE data = ? AND cliente_id = ? AND mod_3 = ?
-            ''', (data_formatada, cliente_id_int, mdo_terceiro))
-            
-            # Inserir novos registros para cada colaborador
-            for colaborador in colaboradores_selecionados:
-                conn.execute('''
-                    INSERT INTO tb_pck_arm 
-                    (data, cliente_id, mod_carsten, mod_3, total_volumes, vol_pessoas, usuario_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    data_formatada,
-                    cliente_id_int,
-                    colaborador,
-                    mdo_terceiro,
-                    total_volumes,
-                    str(vol_pessoa),
-                    session['user_id']
-                ))
+                UPDATE tb_pck_arm 
+                SET data = ?, cliente_id = ?, mod_carsten = ?, mod_3 = ?, 
+                    total_volumes = ?, vol_pessoas = ?, usuario_id = ?
+                WHERE id = ?
+            ''', (
+                data_formatada,
+                cliente_id_int,
+                ', '.join(colaboradores_selecionados),  # Salvar todos os colaboradores em um campo
+                mdo_terceiro,
+                total_volumes,
+                str(vol_pessoa),
+                session['user_id'],
+                id
+            ))
             
             conn.commit()
             
@@ -568,13 +552,8 @@ def editar_cadastro(id):
     # Buscar todos os clientes para o dropdown
     clientes = conn.execute('SELECT id, nome FROM clientes WHERE ativo = 1 ORDER BY nome').fetchall()
     
-    # Buscar todos os colaboradores do cadastro atual
-    colaboradores_cadastro = conn.execute('''
-        SELECT mod_carsten FROM tb_pck_arm 
-        WHERE data = ? AND cliente_id = ? AND mod_3 = ?
-    ''', (cadastro['data'], cadastro['cliente_id'], cadastro['mod_3'])).fetchall()
-    
-    colaboradores_selecionados = [col['mod_carsten'] for col in colaboradores_cadastro]
+    # Converter a string de colaboradores em lista para o formulário
+    colaboradores_selecionados = [col.strip() for col in cadastro['mod_carsten'].split(',') if col.strip()]
     
     conn.close()
     
@@ -592,28 +571,26 @@ def excluir_cadastro():
     id = request.args.get('id')
     conn = get_db_connection()
     
-    # Buscar o registro para obter data, cliente_id e mod_3
+    # Buscar o registro para obter informações para o log
     registro = conn.execute('''
-        SELECT data, cliente_id, mod_3, total_volumes 
+        SELECT data, cliente_id, mod_3, total_volumes, mod_carsten
         FROM tb_pck_arm 
         WHERE id = ?
     ''', (id,)).fetchone()
     
     if registro:
-        # Excluir todos os registros com a mesma data, cliente_id e mod_3
-        conn.execute('''
-            DELETE FROM tb_pck_arm 
-            WHERE data = ? AND cliente_id = ? AND mod_3 = ? AND total_volumes = ?
-        ''', (registro['data'], registro['cliente_id'], registro['mod_3'], registro['total_volumes']))
+        # Excluir o registro específico
+        conn.execute('DELETE FROM tb_pck_arm WHERE id = ?', (id,))
         
         conn.commit()
         
         # Registrar log de exclusão
         registrar_log('CADASTRO_EXCLUIDO', 'CADASTROS', 
                     f'Cadastro excluído - Data: {registro["data"]}, Cliente: {registro["cliente_id"]}, '
-                    f'MDO 3º: {registro["mod_3"]}, Volumes: {registro["total_volumes"]}')
+                    f'MDO 3º: {registro["mod_3"]}, Volumes: {registro["total_volumes"]}, '
+                    f'Colaboradores: {registro["mod_carsten"]}')
         
-        flash('Todos os cadastros relacionados foram excluídos com sucesso!', 'success')
+        flash('Cadastro excluído com sucesso!', 'success')
     else:
         flash('Cadastro não encontrado!', 'danger')
     
@@ -769,6 +746,32 @@ def editar_usuario(id):
             conn.close()
     
     return render_template('editar_usuario.html', usuario=usuario)
+
+@app.route('/admin/usuarios/<int:id>/alterar-senha', methods=['POST'])
+def alterar_senha_usuario(id):
+    if 'user_id' not in session or not session.get('admin'):
+        flash('Acesso negado. Somente administradores podem alterar senhas de usuários.', 'danger')
+        return redirect(url_for('gerenciar_usuarios'))
+    
+    nova_senha = request.form['nova_senha']
+    confirmacao = request.form['confirmacao']
+    
+    if nova_senha != confirmacao:
+        flash('Nova senha e confirmação não coincidem.', 'danger')
+        return redirect(url_for('editar_usuario', id=id))
+    
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE usuarios SET password = ? WHERE id = ?', 
+                    (generate_password_hash(nova_senha), id))
+        conn.commit()
+        flash('Senha do usuário alterada com sucesso!', 'success')
+    except Exception as e:
+        flash('Erro ao alterar senha do usuário.', 'danger')
+    finally:
+        conn.close()
+    
+    return redirect(url_for('editar_usuario', id=id))
 
 @app.route('/admin/usuarios/<int:id>/alternar-status', methods=['POST'])
 def alternar_status_usuario(id):

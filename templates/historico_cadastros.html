@@ -19,13 +19,7 @@
                 <tr>
                     <td>{{ cadastro['data'] }}</td>
                     <td>{{ cadastro['cliente'] }}</td>
-                    <td>
-                        {% if cadastro['mod_carsten'] is iterable and cadastro['mod_carsten'] is not string %}
-                            {{ cadastro['mod_carsten']|join(', ') }}
-                        {% else %}
-                            {{ cadastro['mod_carsten'] }}
-                        {% endif %}
-                    </td>
+                    <td>{{ cadastro['mod_carsten'] }}</td>
                     <td>{{ cadastro['mod_3'] }}</td>
                     <td>{{ cadastro['total_volumes'] }}</td>
                     <td>{{ cadastro['vol_pessoas'] }}</td>

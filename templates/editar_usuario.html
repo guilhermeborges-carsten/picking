@@ -36,5 +36,27 @@
             </form>
         </div>
     </div>
+    
+    <!-- Seção para alterar senha -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Alterar Senha</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('alterar_senha_usuario', id=usuario['id']) }}">
+                <div class="mb-3">
+                    <label for="nova_senha" class="form-label">Nova Senha</label>
+                    <input type="password" class="form-control" id="nova_senha" name="nova_senha" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="confirmacao" class="form-label">Confirme a Nova Senha</label>
+                    <input type="password" class="form-control" id="confirmacao" name="confirmacao" required>
+                </div>
+                
+                <button type="submit" class="btn btn-warning">Alterar Senha</button>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
